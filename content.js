@@ -1,32 +1,49 @@
 // Filter warna transparan
 function isTransparent(color) {
     if (!color || color === 'transparent') return true;
-    const m = color.match(/rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)/);
+    const m = color.match(/rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)/);
     if (m && parseFloat(m[1]) === 0) return true;
     return false;
 }
 
-// Normalisasi format warna ke "rgb(r, g, b)" agar tidak ada duplikat
-// Contoh: "rgba(0, 0, 0, 1)" → "rgb(0, 0, 0)"
-function normalizeColor(color) {
-    if (!color) return null;
+// Hasilkan key unik untuk deduplication berdasarkan nilai warna.
+// Menyertakan alpha sehingga rgba(0,0,0,0.5) ≠ rgb(0,0,0).
+// Hanya menyatukan format berbeda yang secara visual identik:
+// misal "rgba(0, 0, 0, 1)" dan "rgb(0, 0, 0)" → key yang sama.
+function colorKey(color) {
+    if (!color) return color;
     const nums = color.match(/[\d.]+/g);
     if (!nums || nums.length < 3) return color;
     const r = Math.round(parseFloat(nums[0]));
     const g = Math.round(parseFloat(nums[1]));
     const b = Math.round(parseFloat(nums[2]));
+    // Jika alpha ada dan bukan 1, sertakan agar semi-transparan tidak digabung dengan opak
+    const a = nums.length >= 4 ? parseFloat(nums[3]) : 1;
+    if (a < 1) return `rgba(${r}, ${g}, ${b}, ${a})`;
     return `rgb(${r}, ${g}, ${b})`;
 }
 
 // Ambil semua warna unik beserta jumlah elemen yang menggunakannya
 function getAllColors() {
     const elements = document.querySelectorAll('*');
+    // Map<key, { rawValue, count }>
+    // key = colorKey (untuk dedup), rawValue = string asli dari browser
+    // rawValue HARUS tetap asli agar cocok dengan getComputedStyle di replaceColor/highlight
     const bgMap = new Map();
     const textMap = new Map();
     const borderMap = new Map();
 
+    function addToMap(map, rawColor) {
+        const key = colorKey(rawColor);
+        if (map.has(key)) {
+            map.get(key).count++;
+        } else {
+            // Simpan raw value asli — jangan normalize — agar perbandingan di replaceColor tetap akurat
+            map.set(key, { rawValue: rawColor, count: 1 });
+        }
+    }
+
     elements.forEach(el => {
-        // Skip script, style, SVG sub-elements that might pollute colors
         const tag = el.tagName.toLowerCase();
         if (tag === 'script' || tag === 'style' || tag === 'noscript') return;
 
@@ -36,23 +53,16 @@ function getAllColors() {
         const border = style.borderColor;
         const borderWidth = parseFloat(style.borderWidth) || 0;
 
-        if (bg && !isTransparent(bg)) {
-            const normBg = normalizeColor(bg);
-            bgMap.set(normBg, (bgMap.get(normBg) || 0) + 1);
-        }
-        if (fg && !isTransparent(fg)) {
-            const normFg = normalizeColor(fg);
-            textMap.set(normFg, (textMap.get(normFg) || 0) + 1);
-        }
+        if (bg && !isTransparent(bg)) addToMap(bgMap, bg);
+        if (fg && !isTransparent(fg)) addToMap(textMap, fg);
         if (border && !isTransparent(border) && borderWidth > 0 && style.borderStyle !== 'none') {
-            const normBorder = normalizeColor(border);
-            borderMap.set(normBorder, (borderMap.get(normBorder) || 0) + 1);
+            addToMap(borderMap, border);
         }
     });
 
     const toSortedArray = (map, type) =>
-        Array.from(map.entries())
-            .map(([value, count]) => ({ value, type, count }))
+        Array.from(map.values())
+            .map(({ rawValue, count }) => ({ value: rawValue, type, count }))
             .sort((a, b) => b.count - a.count);
 
     return {
