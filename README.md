@@ -18,6 +18,24 @@
 
 ---
 
+## 📸 Contoh Penggunaan (Demo)
+
+<div align="center">
+  <h3>1. Inspeksi & Highlight Elemen Teks (strapi.io)</h3>
+  <img src="assets/demo-strapi.png" alt="Demo Colorish pada Strapi.io" width="100%" />
+  <br>
+  <p><i>Mendeteksi dan menyorot elemen teks pada halaman web saat kursor diarahkan ke kartu warna.</i></p>
+
+  <br>
+
+  <h3>2. Deteksi Warna Background Kompleks (shopee.co.id)</h3>
+  <img src="assets/demo-shopee.png" alt="Demo Colorish pada Shopee.co.id" width="100%" />
+  <br>
+  <p><i>Menganalisis ribuan elemen DOM, memilah background warna, dan mengganti warna secara real-time.</i></p>
+</div>
+
+---
+
 ## ✨ Fitur Utama
 
 - 🎨 **Live Color Swap**: Ubah warna elemen website apa pun (`background`, `text`, `border`) secara instan dengan color picker terintegrasi.
@@ -58,6 +76,9 @@ Ekstensi ini mendukung browser berbasis Chromium seperti **Google Chrome**, **Mi
 
 ```
 colorish/
+├── assets/             # Dokumentasi screenshot & demo visual
+│   ├── demo-strapi.png
+│   └── demo-shopee.png
 ├── icons/              # Ikon ekstensi (16x16, 48x48, 128x128)
 │   ├── icon16.png
 │   ├── icon48.png
