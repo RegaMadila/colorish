@@ -6,6 +6,18 @@ function isTransparent(color) {
     return false;
 }
 
+// Normalisasi format warna ke "rgb(r, g, b)" agar tidak ada duplikat
+// Contoh: "rgba(0, 0, 0, 1)" → "rgb(0, 0, 0)"
+function normalizeColor(color) {
+    if (!color) return null;
+    const nums = color.match(/[\d.]+/g);
+    if (!nums || nums.length < 3) return color;
+    const r = Math.round(parseFloat(nums[0]));
+    const g = Math.round(parseFloat(nums[1]));
+    const b = Math.round(parseFloat(nums[2]));
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
 // Ambil semua warna unik beserta jumlah elemen yang menggunakannya
 function getAllColors() {
     const elements = document.querySelectorAll('*');
@@ -25,13 +37,16 @@ function getAllColors() {
         const borderWidth = parseFloat(style.borderWidth) || 0;
 
         if (bg && !isTransparent(bg)) {
-            bgMap.set(bg, (bgMap.get(bg) || 0) + 1);
+            const normBg = normalizeColor(bg);
+            bgMap.set(normBg, (bgMap.get(normBg) || 0) + 1);
         }
         if (fg && !isTransparent(fg)) {
-            textMap.set(fg, (textMap.get(fg) || 0) + 1);
+            const normFg = normalizeColor(fg);
+            textMap.set(normFg, (textMap.get(normFg) || 0) + 1);
         }
         if (border && !isTransparent(border) && borderWidth > 0 && style.borderStyle !== 'none') {
-            borderMap.set(border, (borderMap.get(border) || 0) + 1);
+            const normBorder = normalizeColor(border);
+            borderMap.set(normBorder, (borderMap.get(normBorder) || 0) + 1);
         }
     });
 
