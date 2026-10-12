@@ -1,0 +1,20 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Build & Dependency artifacts (if added in future)
+node_modules/
+package-lock.json
+*.log
+
+# Temp & Scratch files
+scratch/
+*.tmp
+*.bak
